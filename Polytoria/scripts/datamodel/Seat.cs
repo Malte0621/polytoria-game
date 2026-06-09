@@ -12,6 +12,7 @@ public partial class Seat : Part
 {
 	private bool _canPlayerSit;
 	private bool _canNPCSit;
+	private bool _sitDirectionLocked;
 
 	private NPC? _occupant = null;
 
@@ -47,6 +48,16 @@ public partial class Seat : Part
 		set
 		{
 			_canNPCSit = value;
+			OnPropertyChanged();
+		}
+	}
+	[Editable, ScriptProperty, DefaultValue(true)]
+	public bool SitDirectionLocked
+	{
+		get => _sitDirectionLocked;
+		set
+		{
+			_sitDirectionLocked = value;
 			OnPropertyChanged();
 		}
 	}
