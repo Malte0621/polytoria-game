@@ -6,6 +6,7 @@ using Godot;
 using Polytoria.Providers.AssetLoaders;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,6 +17,10 @@ public partial class AssetLoader : Node
 
 	private readonly record struct AssetCacheKey(ResourceType Type, uint ID, Vector2I? Resize);
 	private const int DefaultMaxConcurrentRequests = 5;
+
+	// Maximum amount of resident asset bytes before least-recently-used entries are evicted.
+	// Tunable; keeps long mobile sessions from growing the cache unbounded.
+	private const long MaxCacheBytes = 96 * 1024 * 1024;
 
 	public AssetLoader()
 	{
@@ -33,6 +38,13 @@ public partial class AssetLoader : Node
 
 	private readonly ConcurrentDictionary<AssetCacheKey, CacheItem> _cache = [];
 	private readonly ConcurrentDictionary<AssetCacheKey, Lazy<Task<CacheItem>>> _pendingRequests = [];
+
+	// Tracks usage recency for LRU eviction. Most-recently-used at the head (First),
+	// least-recently-used at the tail (Last). All access guarded by _lruLock.
+	private readonly LinkedList<AssetCacheKey> _lruOrder = new();
+	private readonly Dictionary<AssetCacheKey, LinkedListNode<AssetCacheKey>> _lruNodes = [];
+	private readonly object _lruLock = new();
+
 	public int MaxConcurrentRequests { get; set; } = DefaultMaxConcurrentRequests;
 
 	private SemaphoreSlim _loadSlots = null!;
@@ -78,8 +90,18 @@ public partial class AssetLoader : Node
 		try
 		{
 			CacheItem result = await LoadResource(item);
+
+			// If an identical entry already lived in the cache (e.g. a race), drop the
+			// stale byte accounting before replacing it so the running total stays accurate.
+			if (_cache.TryGetValue(key, out CacheItem previous))
+			{
+				Interlocked.Add(ref _assetSizeBytes, -previous.SizeBytes);
+			}
+
 			_cache[key] = result;
 			Interlocked.Add(ref _assetSizeBytes, result.SizeBytes);
+			TouchLru(key);
+			EvictIfNeeded();
 			return result;
 		}
 		finally
@@ -89,6 +111,96 @@ public partial class AssetLoader : Node
 		}
 	}
 
+	// Marks a key as most-recently-used, inserting it if not already tracked.
+	private void TouchLru(AssetCacheKey key)
+	{
+		lock (_lruLock)
+		{
+			// The entry may have been evicted between a cache hit and acquiring this
+			// lock; don't resurrect untracked-but-uncached keys into the LRU.
+			if (!_cache.ContainsKey(key))
+			{
+				return;
+			}
+
+			if (_lruNodes.TryGetValue(key, out LinkedListNode<AssetCacheKey>? node))
+			{
+				_lruOrder.Remove(node);
+				_lruOrder.AddFirst(node);
+			}
+			else
+			{
+				_lruNodes[key] = _lruOrder.AddFirst(key);
+			}
+		}
+	}
+
+	// Evicts least-recently-used entries until the resident byte count is back under the cap.
+	// Underlying Godot resources are freed on the main thread to stay thread-safe.
+	private void EvictIfNeeded()
+	{
+		if (Interlocked.Read(ref _assetSizeBytes) <= MaxCacheBytes)
+		{
+			return;
+		}
+
+		List<CacheItem> evicted = [];
+
+		lock (_lruLock)
+		{
+			// Never evict the single most-recently-used entry; it is likely in active use.
+			while (Interlocked.Read(ref _assetSizeBytes) > MaxCacheBytes && _lruOrder.Count > 1)
+			{
+				LinkedListNode<AssetCacheKey>? lruNode = _lruOrder.Last;
+				if (lruNode == null)
+				{
+					break;
+				}
+
+				AssetCacheKey key = lruNode.Value;
+				_lruOrder.RemoveLast();
+				_lruNodes.Remove(key);
+
+				// Skip eviction if a fresh load for this key is in flight; the pending
+				// load will re-insert it shortly and freeing now could race that consumer.
+				if (_pendingRequests.ContainsKey(key))
+				{
+					continue;
+				}
+
+				if (_cache.TryRemove(key, out CacheItem item))
+				{
+					Interlocked.Add(ref _assetSizeBytes, -item.SizeBytes);
+					evicted.Add(item);
+				}
+			}
+		}
+
+		foreach (CacheItem item in evicted)
+		{
+			FreeResource(item.Resource);
+		}
+	}
+
+	// Frees a cached Godot resource safely on the main thread.
+	private static void FreeResource(Resource? resource)
+	{
+		if (resource == null)
+		{
+			return;
+		}
+
+		Callable.From(() =>
+		{
+			if (GodotObject.IsInstanceValid(resource))
+			{
+				// Resource derives from RefCounted, so disposing the managed wrapper
+				// releases our reference and lets Godot reclaim it once unused.
+				resource.Dispose();
+			}
+		}).CallDeferred();
+	}
+
 	public void GetRawCache(CacheItem item, Action<CacheItem> callback)
 	{
 		AssetCacheKey key = KeyFor(item);
@@ -96,6 +208,7 @@ public partial class AssetLoader : Node
 		// Return cached asset
 		if (_cache.TryGetValue(key, out CacheItem cached))
 		{
+			TouchLru(key);
 			Callable.From(() => callback(cached)).CallDeferred();
 			return;
 		}

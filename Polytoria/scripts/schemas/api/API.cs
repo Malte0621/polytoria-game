@@ -448,6 +448,11 @@ public struct APIJoinPlaceRequest
 
 	[JsonPropertyName("isBeta")]
 	public bool IsBeta { get; set; }
+
+	// Optional specific server instance to join; omitted (auto-assign) when null.
+	[JsonPropertyName("serverID")]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? ServerID { get; set; }
 }
 
 public struct APIFeedPostAuthor
@@ -624,6 +629,199 @@ public struct APIPlaceMedia
 	public string Url { get; set; }
 }
 
+// =====================================================================================
+// Mobile additions.
+//
+// The following schemas back mobile-only pages (Home friends/continue, Store browse,
+// Avatar customization). Endpoints they are consumed through (see PolyAPI.cs) are
+// ASSUMED and must be confirmed/implemented on the backend; they follow the existing
+// REST conventions (api.polytoria.com/v1/... for versioned services).
+// =====================================================================================
+
+public struct APIFriendData
+{
+	[JsonPropertyName("id")]
+	public int Id { get; set; }
+
+	[JsonPropertyName("username")]
+	public string Username { get; set; }
+
+	[JsonPropertyName("isOnline")]
+	public bool IsOnline { get; set; }
+
+	[JsonPropertyName("avatarIconUrl")]
+	public string? AvatarIconUrl { get; set; }
+}
+
+public struct APIFriendsRoot
+{
+	[JsonPropertyName("meta")]
+	public APIMeta Meta { get; set; }
+
+	[JsonPropertyName("data")]
+	public APIFriendData[] Data { get; set; }
+}
+
+// Listing wrapper around APIStoreItem, shared by the store browse page and the
+// avatar catalog/inventory browser.
+public struct APIStoreRoot
+{
+	[JsonPropertyName("meta")]
+	public APIMeta Meta { get; set; }
+
+	[JsonPropertyName("data")]
+	public APIStoreItem[] Data { get; set; }
+}
+
+// Body for persisting the current user's avatar from the mobile customizer.
+public struct APIAvatarSaveRequest
+{
+	[JsonPropertyName("assets")]
+	public int[] Assets { get; set; }
+
+	[JsonPropertyName("colors")]
+	public APIAvatarBodyColors Colors { get; set; }
+}
+
+// ----- Place detail page (mobile) -----
+// Endpoints these back (see PolyAPI.cs) are ASSUMED and must be confirmed/implemented
+// on the backend. Each consumer degrades to an empty/hidden state if unavailable.
+
+public struct APIPlaceComment
+{
+	[JsonPropertyName("id")]
+	public int Id { get; set; }
+
+	[JsonPropertyName("content")]
+	public string Content { get; set; }
+
+	[JsonPropertyName("postedAt")]
+	public DateTime PostedAt { get; set; }
+
+	[JsonPropertyName("author")]
+	public APIFeedPostAuthor Author { get; set; }
+}
+
+public struct APIPlaceCommentsRoot
+{
+	[JsonPropertyName("meta")]
+	public APIMeta Meta { get; set; }
+
+	[JsonPropertyName("data")]
+	public APIPlaceComment[] Data { get; set; }
+}
+
+// Real shape confirmed from GET /v1/places/{id}/achievements:
+//   { "achievements": [ { "id": N, "asset": { id, name, description, thumbnail, owners, createdAt } } ] }
+public struct APIAchievementAsset
+{
+	[JsonPropertyName("id")]
+	public int Id { get; set; }
+
+	[JsonPropertyName("name")]
+	public string Name { get; set; }
+
+	[JsonPropertyName("description")]
+	public string Description { get; set; }
+
+	[JsonPropertyName("thumbnail")]
+	public string Thumbnail { get; set; }
+
+	[JsonPropertyName("owners")]
+	public int Owners { get; set; }
+
+	[JsonPropertyName("createdAt")]
+	public DateTime CreatedAt { get; set; }
+}
+
+public struct APIAchievement
+{
+	[JsonPropertyName("id")]
+	public int Id { get; set; }
+
+	[JsonPropertyName("asset")]
+	public APIAchievementAsset Asset { get; set; }
+
+	// Present (when authenticated) once the signed-in user has earned it. Field name ASSUMED.
+	[JsonPropertyName("awardedAt")]
+	public DateTime? AwardedAt { get; set; }
+}
+
+public struct APIAchievementsRoot
+{
+	[JsonPropertyName("achievements")]
+	public APIAchievement[] Achievements { get; set; }
+}
+
+public struct APIServerPlayer
+{
+	[JsonPropertyName("id")]
+	public int Id { get; set; }
+
+	[JsonPropertyName("username")]
+	public string Username { get; set; }
+
+	[JsonPropertyName("thumbnail")]
+	public string? Thumbnail { get; set; }
+}
+
+public struct APIPlaceServer
+{
+	[JsonPropertyName("id")]
+	public string Id { get; set; }
+
+	[JsonPropertyName("playing")]
+	public int Playing { get; set; }
+
+	[JsonPropertyName("maxPlayers")]
+	public int MaxPlayers { get; set; }
+
+	[JsonPropertyName("region")]
+	public string? Region { get; set; }
+
+	[JsonPropertyName("isBeta")]
+	public bool IsBeta { get; set; }
+
+	// Players currently in the server (for the avatar row); ASSUMED to be included.
+	[JsonPropertyName("players")]
+	public APIServerPlayer[]? Players { get; set; }
+}
+
+public struct APIPlaceServersRoot
+{
+	[JsonPropertyName("meta")]
+	public APIMeta Meta { get; set; }
+
+	[JsonPropertyName("data")]
+	public APIPlaceServer[] Data { get; set; }
+}
+
+public struct APIVoteRequest
+{
+	// "like", "dislike" or "none"
+	[JsonPropertyName("vote")]
+	public string Vote { get; set; }
+}
+
+public struct APIVoteResponse
+{
+	[JsonPropertyName("success")]
+	public bool Success { get; set; }
+
+	[JsonPropertyName("likes")]
+	public int Likes { get; set; }
+
+	[JsonPropertyName("dislikes")]
+	public int Dislikes { get; set; }
+
+	[JsonPropertyName("percent")]
+	public string Percent { get; set; }
+
+	// The signed-in user's current vote after this request ("like"/"dislike"/"none").
+	[JsonPropertyName("userVote")]
+	public string? UserVote { get; set; }
+}
+
 public enum LibraryQueryTypeEnum
 {
 	Model,
@@ -653,7 +851,28 @@ public enum LibraryQueryTypeEnum
 [JsonSerializable(typeof(APIWorldsData))]
 [JsonSerializable(typeof(APIStoreItem))]
 [JsonSerializable(typeof(APIStoreItemCreator))]
+[JsonSerializable(typeof(APIStoreRoot))]
+[JsonSerializable(typeof(APIStoreItem[]))]
 [JsonSerializable(typeof(APIOwnsItem))]
+[JsonSerializable(typeof(APIFriendData))]
+[JsonSerializable(typeof(APIFriendData[]))]
+[JsonSerializable(typeof(APIFriendsRoot))]
+[JsonSerializable(typeof(APIAvatarSaveRequest))]
+[JsonSerializable(typeof(int[]))]
+[JsonSerializable(typeof(APIPlaceComment))]
+[JsonSerializable(typeof(APIPlaceComment[]))]
+[JsonSerializable(typeof(APIPlaceCommentsRoot))]
+[JsonSerializable(typeof(APIAchievement))]
+[JsonSerializable(typeof(APIAchievement[]))]
+[JsonSerializable(typeof(APIAchievementAsset))]
+[JsonSerializable(typeof(APIAchievementsRoot))]
+[JsonSerializable(typeof(APIPlaceServer))]
+[JsonSerializable(typeof(APIPlaceServer[]))]
+[JsonSerializable(typeof(APIServerPlayer))]
+[JsonSerializable(typeof(APIServerPlayer[]))]
+[JsonSerializable(typeof(APIPlaceServersRoot))]
+[JsonSerializable(typeof(APIVoteRequest))]
+[JsonSerializable(typeof(APIVoteResponse))]
 [JsonSerializable(typeof(APIPlaceMedia))]
 [JsonSerializable(typeof(APIGuildCreator))]
 [JsonSerializable(typeof(APIGuildInfo))]

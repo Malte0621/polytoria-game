@@ -2,6 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+using Godot;
 using Polytoria.Attributes;
 using Polytoria.Shared.AssetLoaders;
 using System;
@@ -13,6 +14,7 @@ public partial class PTImageAsset : ImageAsset
 {
 	private uint _imageID;
 	private ImageTypeEnum _imageType;
+	private Vector2I? _desiredSize;
 
 	[Editable, ScriptProperty]
 	public uint ImageID
@@ -33,6 +35,20 @@ public partial class PTImageAsset : ImageAsset
 		set
 		{
 			_imageType = value;
+			QueueLoadResource();
+			OnPropertyChanged();
+		}
+	}
+
+	// Optional downscale target. When set, the loaded image is resized to these
+	// dimensions before being cached, saving mobile bandwidth and memory.
+	// Default null leaves the image at its native size (unchanged behaviour).
+	public Vector2I? DesiredSize
+	{
+		get => _desiredSize;
+		set
+		{
+			_desiredSize = value;
 			QueueLoadResource();
 			OnPropertyChanged();
 		}
@@ -62,7 +78,7 @@ public partial class PTImageAsset : ImageAsset
 		};
 
 		AssetLoader.Singleton.GetRawCache(
-			new() { Type = resourceType, ID = ImageID },
+			new() { Type = resourceType, ID = ImageID, Resize = DesiredSize },
 			OnResourceLoaded
 		);
 	}

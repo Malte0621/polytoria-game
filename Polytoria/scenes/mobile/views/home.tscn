@@ -20,16 +20,23 @@ content_margin_bottom = 16.0
 background_mode = 1
 background_color = Color(0.56825703, 0.72225475, 0.8017857, 1)
 
-[node name="Control" type="Control" unique_id=248158860]
+[node name="Control" type="Control" unique_id=248158860 node_paths=PackedStringArray("_usernameLabel", "_scrollContainer", "_friendsSection", "_friendsCountLabel", "_friendsContainer", "_continueSection", "_continueContainer", "_feedRoot")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -768.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1_c7vr6")
 script = ExtResource("2_12s5c")
+_usernameLabel = NodePath("ScrollContainer/VBoxContainer/Control/Layout/Username")
+_scrollContainer = NodePath("ScrollContainer")
+_friendsSection = NodePath("ScrollContainer/VBoxContainer/PanelContainer/Layout/Friends")
+_friendsCountLabel = NodePath("ScrollContainer/VBoxContainer/PanelContainer/Layout/Friends/VBoxContainer/Label2")
+_friendsContainer = NodePath("ScrollContainer/VBoxContainer/PanelContainer/Layout/Friends/ScrollContainer/HBoxContainer2")
+_continueSection = NodePath("ScrollContainer/VBoxContainer/PanelContainer/Layout/Continue")
+_continueContainer = NodePath("ScrollContainer/VBoxContainer/PanelContainer/Layout/Continue/ScrollContainer/HBoxContainer2")
+_feedRoot = NodePath("ScrollContainer/VBoxContainer/PanelContainer/Layout/Feed")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=1290369963]
 layout_mode = 1
@@ -45,8 +52,8 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="Control" type="Panel" parent="ScrollContainer/VBoxContainer" unique_id=1178377096]
-clip_contents = true
 custom_minimum_size = Vector2(0, 225)
+clip_contents = true
 layout_mode = 2
 mouse_filter = 1
 

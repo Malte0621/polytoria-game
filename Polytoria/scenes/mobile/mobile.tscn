@@ -48,7 +48,7 @@ texture = SubResource("GradientTexture2D_xbpss")
 [node name="Mobile" type="Panel" unique_id=1007216720 node_paths=PackedStringArray("StartSplash", "NewUserSplash", "LoadingScreen")]
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_right = 350.0
+offset_right = 1152.0
 grow_vertical = 2
 theme = ExtResource("1_uj03d")
 theme_override_styles/panel = SubResource("StyleBoxFlat_xbpss")

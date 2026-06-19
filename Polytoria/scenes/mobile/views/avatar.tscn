@@ -76,16 +76,23 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[node name="Control" type="Control" unique_id=1337601666]
+[node name="Control" type="Control" unique_id=1337601666 node_paths=PackedStringArray("_grid", "_previewRect", "_saveButton", "_allButton", "_accessoriesButton", "_shirtsButton", "_pantsButton", "_toolsButton")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -768.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1_7icsa")
 script = ExtResource("2_xqdui")
+_grid = NodePath("VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid")
+_previewRect = NodePath("VBoxContainer/Control/PreviewRect")
+_saveButton = NodePath("VBoxContainer/Control/SaveButton")
+_allButton = NodePath("VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer2/HBoxContainer/All")
+_accessoriesButton = NodePath("VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer2/HBoxContainer/Accessories")
+_shirtsButton = NodePath("VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer2/HBoxContainer/Shirts")
+_pantsButton = NodePath("VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer2/HBoxContainer/Pants")
+_toolsButton = NodePath("VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer2/HBoxContainer/Tools")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=621003515]
 layout_mode = 1
@@ -97,8 +104,8 @@ grow_vertical = 2
 theme_override_constants/separation = 0
 
 [node name="Control" type="Panel" parent="VBoxContainer" unique_id=274152673]
-clip_contents = true
 custom_minimum_size = Vector2(0, 340)
+clip_contents = true
 layout_mode = 2
 mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxTexture_jus44")
@@ -133,6 +140,36 @@ transform = Transform3D(0.9659258, 0.1830127, -0.1830127, 0, 0.7071068, 0.707106
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="VBoxContainer/Control/AspectRatioContainer/SubViewportContainer/PlayerModel" unique_id=476257998]
 environment = SubResource("Environment_j26d1")
+
+[node name="PreviewRect" type="TextureRect" parent="VBoxContainer/Control" unique_id=1900100001]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SaveButton" type="Button" parent="VBoxContainer/Control" unique_id=1900100002]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -132.0
+offset_top = -52.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_txyea")
+theme_override_styles/hover = SubResource("StyleBoxFlat_txyea")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_sschr")
+text = "Save"
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer" unique_id=1335458102]
 layout_mode = 2
@@ -208,513 +245,3 @@ theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
 columns = 3
 
-[node name="Panel" type="Control" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid" unique_id=249122760]
-custom_minimum_size = Vector2(115, 180)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-mouse_filter = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel" unique_id=697781193]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel/VBoxContainer" unique_id=1203857499]
-custom_minimum_size = Vector2(0, 123)
-layout_mode = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_jus44")
-
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel/VBoxContainer/Panel" unique_id=84067517]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TextureRect" type="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel/VBoxContainer/Panel/MarginContainer" unique_id=479524190]
-layout_mode = 2
-texture = ExtResource("10_vtc8j")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel/VBoxContainer/Panel" unique_id=1858337888]
-clip_children = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_vtc8j")
-
-[node name="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel/VBoxContainer/Panel/Panel" unique_id=1585843596 instance=ExtResource("11_jus44")]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-grow_horizontal = 1
-grow_vertical = 1
-
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel/VBoxContainer" unique_id=312268876]
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-mouse_filter = 1
-theme_override_font_sizes/font_size = 16
-text = "rabbit cotton shirt"
-autowrap_mode = 3
-text_overrun_behavior = 3
-
-[node name="Button" type="Button" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel" unique_id=1785318342]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-flat = true
-
-[node name="Panel2" type="Control" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid" unique_id=501576356]
-custom_minimum_size = Vector2(115, 180)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-mouse_filter = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel2" unique_id=1695646447]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel2/VBoxContainer" unique_id=907657193]
-custom_minimum_size = Vector2(0, 123)
-layout_mode = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_jus44")
-
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel2/VBoxContainer/Panel" unique_id=1961811045]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TextureRect" type="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel2/VBoxContainer/Panel/MarginContainer" unique_id=672424471]
-layout_mode = 2
-texture = ExtResource("10_vtc8j")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel2/VBoxContainer/Panel" unique_id=1097555420]
-clip_children = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_vtc8j")
-
-[node name="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel2/VBoxContainer/Panel/Panel" unique_id=121152435 instance=ExtResource("11_jus44")]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-grow_horizontal = 1
-grow_vertical = 1
-
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel2/VBoxContainer" unique_id=605547729]
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-mouse_filter = 1
-theme_override_font_sizes/font_size = 16
-text = "rabbit cotton shirt"
-autowrap_mode = 3
-text_overrun_behavior = 3
-
-[node name="Button" type="Button" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel2" unique_id=1755409150]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-flat = true
-
-[node name="Panel3" type="Control" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid" unique_id=1960295753]
-custom_minimum_size = Vector2(115, 180)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-mouse_filter = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel3" unique_id=1538608162]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel3/VBoxContainer" unique_id=1044457973]
-custom_minimum_size = Vector2(0, 123)
-layout_mode = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_jus44")
-
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel3/VBoxContainer/Panel" unique_id=1326628603]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TextureRect" type="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel3/VBoxContainer/Panel/MarginContainer" unique_id=126174084]
-layout_mode = 2
-texture = ExtResource("10_vtc8j")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel3/VBoxContainer/Panel" unique_id=145521177]
-clip_children = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_vtc8j")
-
-[node name="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel3/VBoxContainer/Panel/Panel" unique_id=1189331083 instance=ExtResource("11_jus44")]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-grow_horizontal = 1
-grow_vertical = 1
-
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel3/VBoxContainer" unique_id=182088605]
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-mouse_filter = 1
-theme_override_font_sizes/font_size = 16
-text = "rabbit cotton shirt"
-autowrap_mode = 3
-text_overrun_behavior = 3
-
-[node name="Button" type="Button" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel3" unique_id=1581628143]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-flat = true
-
-[node name="Panel4" type="Control" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid" unique_id=1478123669]
-custom_minimum_size = Vector2(115, 180)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-mouse_filter = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel4" unique_id=372839195]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel4/VBoxContainer" unique_id=1649556294]
-custom_minimum_size = Vector2(0, 123)
-layout_mode = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_jus44")
-
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel4/VBoxContainer/Panel" unique_id=2066215095]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TextureRect" type="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel4/VBoxContainer/Panel/MarginContainer" unique_id=1273239863]
-layout_mode = 2
-texture = ExtResource("10_vtc8j")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel4/VBoxContainer/Panel" unique_id=619331025]
-clip_children = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_vtc8j")
-
-[node name="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel4/VBoxContainer/Panel/Panel" unique_id=755739252 instance=ExtResource("11_jus44")]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-grow_horizontal = 1
-grow_vertical = 1
-
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel4/VBoxContainer" unique_id=103974268]
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-mouse_filter = 1
-theme_override_font_sizes/font_size = 16
-text = "rabbit cotton shirt"
-autowrap_mode = 3
-text_overrun_behavior = 3
-
-[node name="Button" type="Button" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel4" unique_id=995362339]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-flat = true
-
-[node name="Panel5" type="Control" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid" unique_id=489639562]
-custom_minimum_size = Vector2(115, 180)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-mouse_filter = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel5" unique_id=925230014]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel5/VBoxContainer" unique_id=497679674]
-custom_minimum_size = Vector2(0, 123)
-layout_mode = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_jus44")
-
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel5/VBoxContainer/Panel" unique_id=444610424]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TextureRect" type="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel5/VBoxContainer/Panel/MarginContainer" unique_id=868141771]
-layout_mode = 2
-texture = ExtResource("10_vtc8j")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel5/VBoxContainer/Panel" unique_id=1074933387]
-clip_children = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_vtc8j")
-
-[node name="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel5/VBoxContainer/Panel/Panel" unique_id=1080007950 instance=ExtResource("11_jus44")]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-grow_horizontal = 1
-grow_vertical = 1
-
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel5/VBoxContainer" unique_id=1147717462]
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-mouse_filter = 1
-theme_override_font_sizes/font_size = 16
-text = "rabbit cotton shirt"
-autowrap_mode = 3
-text_overrun_behavior = 3
-
-[node name="Button" type="Button" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel5" unique_id=490981049]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-flat = true
-
-[node name="Panel6" type="Control" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid" unique_id=1810769488]
-custom_minimum_size = Vector2(115, 180)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-mouse_filter = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel6" unique_id=605009416]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel6/VBoxContainer" unique_id=1211769299]
-custom_minimum_size = Vector2(0, 123)
-layout_mode = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_jus44")
-
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel6/VBoxContainer/Panel" unique_id=1065944837]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TextureRect" type="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel6/VBoxContainer/Panel/MarginContainer" unique_id=1543677608]
-layout_mode = 2
-texture = ExtResource("10_vtc8j")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel6/VBoxContainer/Panel" unique_id=757875151]
-clip_children = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_vtc8j")
-
-[node name="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel6/VBoxContainer/Panel/Panel" unique_id=1119573863 instance=ExtResource("11_jus44")]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-grow_horizontal = 1
-grow_vertical = 1
-
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel6/VBoxContainer" unique_id=1712866131]
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-mouse_filter = 1
-theme_override_font_sizes/font_size = 16
-text = "rabbit cotton shirt"
-autowrap_mode = 3
-text_overrun_behavior = 3
-
-[node name="Button" type="Button" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel6" unique_id=480537643]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-flat = true
-
-[node name="Panel7" type="Control" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid" unique_id=1618709937]
-custom_minimum_size = Vector2(115, 180)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-mouse_filter = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel7" unique_id=1059178463]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel7/VBoxContainer" unique_id=810659568]
-custom_minimum_size = Vector2(0, 123)
-layout_mode = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_jus44")
-
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel7/VBoxContainer/Panel" unique_id=1566953333]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TextureRect" type="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel7/VBoxContainer/Panel/MarginContainer" unique_id=1747318045]
-layout_mode = 2
-texture = ExtResource("10_vtc8j")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Panel" type="Panel" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel7/VBoxContainer/Panel" unique_id=1687902375]
-clip_children = 1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_vtc8j")
-
-[node name="TextureRect" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel7/VBoxContainer/Panel/Panel" unique_id=1013532059 instance=ExtResource("11_jus44")]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-grow_horizontal = 1
-grow_vertical = 1
-
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel7/VBoxContainer" unique_id=818376512]
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-mouse_filter = 1
-theme_override_font_sizes/font_size = 16
-text = "rabbit cotton shirt"
-autowrap_mode = 3
-text_overrun_behavior = 3
-
-[node name="Button" type="Button" parent="VBoxContainer/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/Grid/Panel7" unique_id=934669184]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-flat = true

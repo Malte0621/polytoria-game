@@ -35,15 +35,48 @@ public static class PolyMobileAuthAPI
 
 		if (FileAccess.FileExists(AuthDataPath))
 		{
-			using FileAccess access = FileAccess.Open(AuthDataPath, FileAccess.ModeFlags.Read);
-			string data = access.GetAsText();
-			access.Close();
-			MobileAuthData? auth = JsonSerializer.Deserialize(data, MobileAuthDataGenerationContext.Default.MobileAuthData);
-			if (auth != null)
+			try
 			{
-				PT.Print("Existing auth data exists, using");
-				PT.Print(_authData.Token);
-				_authData = auth.Value;
+				using FileAccess access = FileAccess.Open(AuthDataPath, FileAccess.ModeFlags.Read);
+				if (access == null)
+				{
+					PT.PrintErr($"FileAccess.Open returned null for path {AuthDataPath}");
+				}
+				else
+				{
+					string data = access.GetAsText();
+
+					if (string.IsNullOrEmpty(data))
+					{
+						PT.PrintWarn($"Auth data file at '{AuthDataPath}' is empty, removing.");
+						access.Close();
+						DirAccess.RemoveAbsolute(AuthDataPath);
+					}
+					else
+					{
+						MobileAuthData? auth = JsonSerializer.Deserialize(data, MobileAuthDataGenerationContext.Default.MobileAuthData);
+						if (auth != null)
+						{
+							PT.Print("Existing auth data exists, using");
+							_authData = auth.Value;
+						}
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				// Corrupt/unreadable auth data should never crash us, just fall back to unauthenticated.
+				PT.PrintErr(ex);
+				PT.PrintWarn($"Failed to load auth data from '{AuthDataPath}', removing and falling back to unauthenticated.");
+				try
+				{
+					DirAccess.RemoveAbsolute(AuthDataPath);
+				}
+				catch (Exception removeEx)
+				{
+					PT.PrintErr(removeEx);
+				}
+				_authData = new();
 			}
 		}
 
@@ -59,9 +92,23 @@ public static class PolyMobileAuthAPI
 
 	private static void SaveAuthData()
 	{
-		FileAccess authData = FileAccess.Open(AuthDataPath, FileAccess.ModeFlags.Write);
-		authData.StoreString(JsonSerializer.Serialize(_authData, MobileAuthDataGenerationContext.Default.MobileAuthData));
-		authData.Close();
+		try
+		{
+			// Serialize BEFORE opening the file so a serialization failure doesnt leave a half-written/empty file.
+			string json = JsonSerializer.Serialize(_authData, MobileAuthDataGenerationContext.Default.MobileAuthData);
+
+			using FileAccess authData = FileAccess.Open(AuthDataPath, FileAccess.ModeFlags.Write);
+			if (authData == null)
+			{
+				PT.PrintErr($"FileAccess.Open returned null for path {AuthDataPath}");
+				return;
+			}
+			authData.StoreString(json);
+		}
+		catch (Exception ex)
+		{
+			PT.PrintErr(ex);
+		}
 	}
 
 	public static void StartMobileAuth()
@@ -110,14 +157,8 @@ public static class PolyMobileAuthAPI
 		}
 		catch (Exception ex)
 		{
-			if (OS.IsDebugBuild())
-			{
-				OS.Alert($"{ex}", "Authentication Failure");
-			}
-			else
-			{
-				OS.Alert("Your session has expired, please log back in again.", "Authentication Failure");
-			}
+			PT.PrintErr(ex);
+			Polytoria.Mobile.MobileUI.Singleton?.ShowToast("Your session has expired, please log back in again.");
 			AskForAuthentication?.Invoke();
 		}
 	}

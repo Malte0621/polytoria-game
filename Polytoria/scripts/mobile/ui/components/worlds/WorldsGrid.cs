@@ -27,6 +27,10 @@ public partial class WorldsGrid : Control
 		try
 		{
 			APIWorldsRoot root = await PolyAPI.GetWorlds();
+			if (root.Data == null)
+			{
+				return;
+			}
 
 			foreach (APIWorldsData item in root.Data)
 			{
@@ -38,14 +42,7 @@ public partial class WorldsGrid : Control
 		catch (Exception ex)
 		{
 			PT.PrintErr(ex);
-			if (OS.IsDebugBuild())
-			{
-				OS.Alert(ex.ToString(), "Error loading games");
-			}
-			else
-			{
-				OS.Alert("Something went wrong, please try again.", "Error");
-			}
+			MobileUI.Singleton.ShowToast("Couldn't load places. Please try again.");
 		}
 		MobileUI.Singleton.LoadingScreen.HideScreen();
 	}

@@ -1,0 +1,89 @@
+[gd_scene load_steps=6 format=3 uid="uid://b8avitemcrd29"]
+
+[ext_resource type="Script" uid="uid://c8avatcrd16x29" path="res://scripts/mobile/ui/components/avatar/AvatarItemCard.cs" id="1_card"]
+[ext_resource type="Texture2D" uid="uid://ducav07koy0iq" path="res://assets/textures/client/placeholder/avatar.png" id="2_ph"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.15686275, 0.29411766, 0.45882353, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_marker"]
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0.5921569, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_flat"]
+
+[node name="AvatarItemCard" type="Button" unique_id=1900000001 node_paths=PackedStringArray("_iconRect", "_nameLabel", "_equippedMarker")]
+custom_minimum_size = Vector2(115, 180)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+theme_override_styles/normal = SubResource("StyleBoxEmpty_flat")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_flat")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_flat")
+script = ExtResource("1_card")
+_iconRect = NodePath("VBoxContainer/Panel/MarginContainer/TextureRect")
+_nameLabel = NodePath("VBoxContainer/Label")
+_equippedMarker = NodePath("VBoxContainer/Panel/EquippedMarker")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1900000002]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="VBoxContainer" unique_id=1900000003]
+custom_minimum_size = Vector2(0, 123)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/Panel" unique_id=1900000004]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TextureRect" type="TextureRect" parent="VBoxContainer/Panel/MarginContainer" unique_id=1900000005]
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_ph")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EquippedMarker" type="Panel" parent="VBoxContainer/Panel" unique_id=1900000006]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_marker")
+
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=1900000007]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 16
+text = "Item Name"
+autowrap_mode = 3
+text_overrun_behavior = 3

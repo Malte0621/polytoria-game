@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://1ftwwqwxndh4"]
 
 [ext_resource type="Theme" uid="uid://dofh67vfwf6qe" path="res://resources/themes/mobile.tres" id="1_f8xao"]
-[ext_resource type="Script" uid="uid://dkr1tqsj6xwjt" path="res://scripts/mobile/ui/views/MobileViewBase.cs" id="2_jqfof"]
+[ext_resource type="Script" path="res://scripts/mobile/ui/views/worlds/ViewWorldsPage.cs" id="2_jqfof"]
 [ext_resource type="Texture2D" uid="uid://wlrvgtw6qeuw" path="res://assets/textures/mobile/home/headerbg_color.png" id="3_ybeeg"]
 [ext_resource type="Texture2D" uid="uid://dgna45btjijiq" path="res://assets/textures/ui-icons/star-filled.svg" id="4_ccoek"]
 [ext_resource type="Script" uid="uid://ubmohvfs7uwn" path="res://scripts/mobile/ui/components/worlds/WorldsGrid.cs" id="5_jqfof"]
@@ -25,7 +25,6 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -768.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1_f8xao")
@@ -45,8 +44,8 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="Control" type="Panel" parent="ScrollContainer/VBoxContainer" unique_id=1767925624]
-clip_contents = true
 custom_minimum_size = Vector2(0, 225)
+clip_contents = true
 layout_mode = 2
 mouse_filter = 1
 

@@ -110,6 +110,119 @@ public static class PolyAPI
 		);
 	}
 
+	// ---------------------------------------------------------------------------------
+	// Mobile-only endpoints.
+	//
+	// NOTE: the URLs below are ASSUMED and must be confirmed/implemented on the backend.
+	// They follow the project's existing REST conventions. Each consumer degrades
+	// gracefully (shows an empty state) if the endpoint is missing.
+	// ---------------------------------------------------------------------------------
+
+	/// <summary>Friends of a user. ASSUMED endpoint: GET /v1/users/{id}/friends?page=N</summary>
+	public static Task<APIFriendsRoot> GetUserFriends(int userID, int page = 1)
+	{
+		return _client.GetFromJsonAsync(
+			Globals.ApiEndpoint.PathJoin($"/v1/users/{userID}/friends?page={page}"),
+			APIGenerationContext.Default.APIFriendsRoot
+		);
+	}
+
+	/// <summary>Recently played places for the signed-in user. ASSUMED endpoint: GET /api/users/me/recently-played</summary>
+	public static Task<APIWorldsRoot> GetRecentlyPlayed()
+	{
+		return _client.GetFromJsonAsync(
+			Globals.MainEndpoint.PathJoin("/api/users/me/recently-played"),
+			APIGenerationContext.Default.APIWorldsRoot
+		);
+	}
+
+	/// <summary>Store listing, optionally filtered by item type. ASSUMED endpoint: GET /v1/store?type=&amp;page=N</summary>
+	public static Task<APIStoreRoot> GetStoreItems(string? type = null, int page = 1)
+	{
+		string query = $"/v1/store?page={page}";
+		if (!string.IsNullOrEmpty(type))
+		{
+			query += "&type=" + type;
+		}
+		return _client.GetFromJsonAsync(
+			Globals.ApiEndpoint.PathJoin(query),
+			APIGenerationContext.Default.APIStoreRoot
+		);
+	}
+
+	/// <summary>Avatar items owned by a user, optionally filtered by type. ASSUMED endpoint: GET /v1/users/{id}/inventory?type=&amp;page=N</summary>
+	public static Task<APIStoreRoot> GetUserInventory(int userID, string? type = null, int page = 1)
+	{
+		string query = $"/v1/users/{userID}/inventory?page={page}";
+		if (!string.IsNullOrEmpty(type))
+		{
+			query += "&type=" + type;
+		}
+		return _client.GetFromJsonAsync(
+			Globals.ApiEndpoint.PathJoin(query),
+			APIGenerationContext.Default.APIStoreRoot
+		);
+	}
+
+	/// <summary>Persist the signed-in user's avatar. ASSUMED endpoint: POST /v1/users/me/avatar</summary>
+	public static async Task<APIAvatarResponse> SaveAvatar(APIAvatarSaveRequest req)
+	{
+		HttpResponseMessage response = await _client.PostAsJsonAsync(
+			Globals.ApiEndpoint.PathJoin("/v1/users/me/avatar"),
+			req,
+			APIGenerationContext.Default.APIAvatarSaveRequest
+		);
+
+		response.EnsureSuccessStatusCode();
+
+		return await response.Content.ReadFromJsonAsync(
+			APIGenerationContext.Default.APIAvatarResponse
+		);
+	}
+
+	/// <summary>Comments on a place. ASSUMED endpoint: GET /v1/places/{id}/comments?page=N</summary>
+	public static Task<APIPlaceCommentsRoot> GetPlaceComments(int placeID, int page = 1)
+	{
+		return _client.GetFromJsonAsync(
+			Globals.ApiEndpoint.PathJoin($"/v1/places/{placeID}/comments?page={page}"),
+			APIGenerationContext.Default.APIPlaceCommentsRoot
+		);
+	}
+
+	/// <summary>Achievements for a place. Confirmed endpoint: GET /v1/places/{id}/achievements</summary>
+	public static Task<APIAchievementsRoot> GetPlaceAchievements(int placeID)
+	{
+		return _client.GetFromJsonAsync(
+			Globals.ApiEndpoint.PathJoin($"/v1/places/{placeID}/achievements"),
+			APIGenerationContext.Default.APIAchievementsRoot
+		);
+	}
+
+	/// <summary>Active server instances for a place. ASSUMED endpoint: GET /v1/places/{id}/servers?page=N</summary>
+	public static Task<APIPlaceServersRoot> GetPlaceServers(int placeID, int page = 1)
+	{
+		return _client.GetFromJsonAsync(
+			Globals.ApiEndpoint.PathJoin($"/v1/places/{placeID}/servers?page={page}"),
+			APIGenerationContext.Default.APIPlaceServersRoot
+		);
+	}
+
+	/// <summary>Like/dislike a place ("like"/"dislike"/"none"). ASSUMED endpoint: POST /v1/places/{id}/vote</summary>
+	public static async Task<APIVoteResponse> VotePlace(int placeID, string vote)
+	{
+		HttpResponseMessage response = await _client.PostAsJsonAsync(
+			Globals.ApiEndpoint.PathJoin($"/v1/places/{placeID}/vote"),
+			new APIVoteRequest { Vote = vote },
+			APIGenerationContext.Default.APIVoteRequest
+		);
+
+		response.EnsureSuccessStatusCode();
+
+		return await response.Content.ReadFromJsonAsync(
+			APIGenerationContext.Default.APIVoteResponse
+		);
+	}
+
 #if CREATOR
 	public static Task<APILibraryResponse> GetLibrary(LibraryQueryTypeEnum type, int page = 1, string searchQuery = "")
 	{

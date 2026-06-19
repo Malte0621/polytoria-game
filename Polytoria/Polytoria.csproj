@@ -18,6 +18,76 @@
 		<DefineConstants>$(DefineConstants);CLIENT</DefineConstants>
 	</PropertyGroup>
 
+	<!--
+		NativeAOT Android (linux-bionic) cross-link toolchain.
+
+		Godot exports .NET Android with dotnet/android_use_linux_bionic=true, which
+		publishes the linux-bionic-* RIDs and links with lld (LinkerFlavor=lld).
+		NativeAOT must link with the Android NDK's clang+lld, NOT a host compiler.
+		With no compiler pinned, ILCompiler probes PATH, finds no clang, falls back
+		to MSYS2/MinGW gcc and dies in Microsoft.NETCore.Native.Unix.targets:
+			gcc -fuse-ld=lld linker probe exits 1 / cannot find 'ld'.
+
+		ILCompiler probes the linker/objcopy with `where /Q`, which CANNOT accept an
+		absolute path (the drive colon trips its location:pattern syntax, giving
+		"Invalid pattern is specified in path:pattern"). So we prepend the NDK LLVM
+		bin to PATH (see _PrependNdkToPath below) and reference the per-RID clang
+		wrapper (bakes target + sysroot, defaults to lld) and llvm-objcopy by bare
+		name instead.
+
+		Override on the command line if your SDK/NDK differ, e.g.:
+			-p:AndroidNdkVersion=27.0.12077973 -p:AndroidNdkApiLevel=24
+	-->
+	<PropertyGroup Condition="'$(GodotTargetPlatform)' == 'android'">
+		<AndroidSdkRoot Condition="'$(AndroidSdkRoot)' == ''">$(ANDROID_HOME)</AndroidSdkRoot>
+		<AndroidSdkRoot Condition="'$(AndroidSdkRoot)' == ''">$(ANDROID_SDK_ROOT)</AndroidSdkRoot>
+		<AndroidNdkVersion Condition="'$(AndroidNdkVersion)' == ''">28.2.13676358</AndroidNdkVersion>
+		<AndroidNdkApiLevel Condition="'$(AndroidNdkApiLevel)' == ''">21</AndroidNdkApiLevel>
+		<!-- NormalizeDirectory fixes mixed slashes (ANDROID_HOME may use '/') and gives a trailing '\'. -->
+		<_AndroidNdkBin>$([MSBuild]::NormalizeDirectory('$(AndroidSdkRoot)', 'ndk', '$(AndroidNdkVersion)', 'toolchains', 'llvm', 'prebuilt', 'windows-x86_64', 'bin'))</_AndroidNdkBin>
+		<ObjCopyName>llvm-objcopy.exe</ObjCopyName>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-bionic-arm64'">
+		<CppCompilerAndLinker>aarch64-linux-android$(AndroidNdkApiLevel)-clang.cmd</CppCompilerAndLinker>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-bionic-x64'">
+		<CppCompilerAndLinker>x86_64-linux-android$(AndroidNdkApiLevel)-clang.cmd</CppCompilerAndLinker>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-bionic-arm'">
+		<CppCompilerAndLinker>armv7a-linux-androideabi$(AndroidNdkApiLevel)-clang.cmd</CppCompilerAndLinker>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-bionic-x86'">
+		<CppCompilerAndLinker>i686-linux-android$(AndroidNdkApiLevel)-clang.cmd</CppCompilerAndLinker>
+	</PropertyGroup>
+
+	<!--
+		MSBuild blocks Environment.SetEnvironmentVariable as a property function (MSB4185),
+		so prepend the NDK bin to PATH with an inline task. It mutates the build process
+		environment in place; the ILCompiler probe/link Exec children inherit it. Runs
+		before SetupOSSpecificProps (the target that holds the `where /Q` probe).
+	-->
+	<UsingTask TaskName="PrependToPath" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" Condition="'$(GodotTargetPlatform)' == 'android'">
+		<ParameterGroup>
+			<Directory ParameterType="System.String" Required="true" />
+		</ParameterGroup>
+		<Task>
+			<Code Type="Fragment" Language="cs"><![CDATA[
+				var dir = Directory.TrimEnd('\\', '/');
+				var path = System.Environment.GetEnvironmentVariable("PATH") ?? "";
+				var has = false;
+				foreach (var e in path.Split(';'))
+					if (string.Equals(e.TrimEnd('\\', '/'), dir, System.StringComparison.OrdinalIgnoreCase)) { has = true; break; }
+				if (!has) System.Environment.SetEnvironmentVariable("PATH", dir + ";" + path);
+			]]></Code>
+		</Task>
+	</UsingTask>
+
+	<Target Name="_PrependNdkToPath" BeforeTargets="SetupOSSpecificProps"
+			Condition="'$(GodotTargetPlatform)' == 'android' And '$(AndroidSdkRoot)' != ''">
+		<PrependToPath Directory="$(_AndroidNdkBin)" />
+	</Target>
+
 	<ItemGroup Condition="'$(RuntimeIdentifier)' == 'ios-arm64'">
 		<DirectPInvoke Include="Luau.VM" />
 		<DirectPInvoke Include="Luau.Compiler" />
@@ -84,11 +154,29 @@
 	</PropertyGroup>
 
 	<!-- Build Target Configurations -->
+	<!--
+		These are DEFAULTS only (Condition on empty) so they do NOT clobber the
+		IsMobile=true / IsCreator=false set by the Android/iOS NativeAOT block at the top
+		of this file. The original unconditional <IsMobile>false</IsMobile> here ran AFTER
+		that block and silently disabled mobile for ExportRelease Android exports, which
+		stripped every scripts/mobile/**/*.cs from the build -> Godot then failed at runtime
+		with "Cannot instantiate C# script because the associated class could not be found".
+	-->
 	<PropertyGroup>
-		<IsCreator>false</IsCreator>
-		<IsMobile>false</IsMobile>
+		<IsCreator Condition="'$(IsCreator)' == ''">false</IsCreator>
+		<IsMobile Condition="'$(IsMobile)' == ''">false</IsMobile>
 		<IsCreator Condition="'$(PT_BUILD_TARGET)' == 'CREATOR'">true</IsCreator>
 		<IsMobile Condition="'$(PT_BUILD_TARGET)' == 'MOBILE'">true</IsMobile>
+	</PropertyGroup>
+
+	<!--
+		Mobile detection fallback by RuntimeIdentifier: Android publishes the linux-bionic-*
+		RIDs (and iOS the ios-* RIDs). Some publish invocations report
+		GodotTargetPlatform=linuxbsd rather than 'android', so also detect mobile from the
+		RID to guarantee scripts/mobile/** is compiled in regardless of how the export runs.
+	-->
+	<PropertyGroup Condition="$(RuntimeIdentifier.Contains('bionic')) Or $(RuntimeIdentifier.StartsWith('ios'))">
+		<IsMobile>true</IsMobile>
 	</PropertyGroup>
 
 	<!-- Production Flag -->

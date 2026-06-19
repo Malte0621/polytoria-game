@@ -6,6 +6,7 @@ using Godot;
 using Polytoria.Schemas.API;
 using Polytoria.Shared;
 using Polytoria.Utils;
+using System;
 
 namespace Polytoria.Mobile.UI;
 
@@ -16,26 +17,59 @@ public partial class FeedRoot : Node
 	private PackedScene _feedCard = null!;
 	[Export] private Control _feedContainer = null!;
 
+	private int _currentPage;
+	private int _lastPage = 1;
+	private bool _isLoading;
+
+	/// <summary>True while a page request is in flight (guards against duplicate loads).</summary>
+	public bool IsLoading => _isLoading;
+
+	/// <summary>True while there are still more pages to fetch.</summary>
+	public bool HasMorePages => _currentPage < _lastPage;
+
 	public override void _Ready()
 	{
-		LoadFeed();
+		// First page.
+		LoadNextPage();
 	}
 
-	private async void LoadFeed()
+	/// <summary>
+	/// Loads the next page of feed posts. Safe to call repeatedly: it no-ops while a
+	/// request is in flight or once the last page has been reached.
+	/// </summary>
+	public async void LoadNextPage()
 	{
+		if (_isLoading || !HasMorePages)
+		{
+			return;
+		}
+
+		_isLoading = true;
+		int pageToLoad = _currentPage + 1;
+
 		try
 		{
-			APIFeedPostRoot feed = await PolyAPI.GetFeedPosts();
-			foreach (APIFeedPostData item in feed.Data)
+			APIFeedPostRoot feed = await PolyAPI.GetFeedPosts(pageToLoad);
+
+			_currentPage = feed.Meta.CurrentPage;
+			_lastPage = Mathf.Max(feed.Meta.LastPage, _currentPage);
+
+			if (feed.Data != null)
 			{
-				FeedPostCard card = Globals.CreateInstanceFromScene<FeedPostCard>(FeedCardPath);
-				card.Data = item;
-				_feedContainer.AddChild(card);
+				foreach (APIFeedPostData item in feed.Data)
+				{
+					FeedPostCard card = Globals.CreateInstanceFromScene<FeedPostCard>(FeedCardPath);
+					card.Data = item;
+					_feedContainer.AddChild(card);
+				}
 			}
 		}
-		catch
+		catch (Exception ex)
 		{
-			PT.PrintErr("Failed to load feed");
+			PT.PrintErr(ex);
+			MobileUI.Singleton.ShowToast("Couldn't load the feed. Please try again.");
 		}
+
+		_isLoading = false;
 	}
 }
