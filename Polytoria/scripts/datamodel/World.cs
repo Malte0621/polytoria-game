@@ -106,6 +106,7 @@ public sealed partial class World : Instance
 	public ServerHidden ServerHidden => FindChild<ServerHidden>("ServerHidden")!;
 	public PlayerGUI PlayerGUI => FindChild<PlayerGUI>("PlayerGUI")!;
 	public ChatService Chat => FindChild<ChatService>("Chat")!;
+	public VoiceChatService VoiceChat => FindChild<VoiceChatService>("VoiceChat")!;
 	public InputService Input => FindChild<InputService>("Input")!;
 	public FilterService Filter => FindChild<FilterService>("Filter")!;
 	public AssetsService Assets => FindChild<AssetsService>("Assets")!;
@@ -648,6 +649,15 @@ public sealed partial class World : Instance
 			filterService.NetworkParent = this;
 		}
 
+		VoiceChatService? voiceChatService = FindChild<VoiceChatService>("VoiceChat");
+
+		if (voiceChatService == null)
+		{
+			voiceChatService = Globals.LoadInstance<VoiceChatService>(Root);
+			voiceChatService.NameOverride = "VoiceChat";
+			voiceChatService.NetworkParent = this;
+		}
+
 #if CREATOR
 		if (SessionType == SessionTypeEnum.Creator)
 		{
@@ -817,6 +827,7 @@ public sealed partial class World : Instance
 			playerDefaults,
 			playerGUI,
 			chatService,
+			voiceChatService,
 			inputService,
 			assetsService,
 			filterService,

@@ -83,8 +83,7 @@
 		</Task>
 	</UsingTask>
 
-	<Target Name="_PrependNdkToPath" BeforeTargets="SetupOSSpecificProps"
-			Condition="'$(GodotTargetPlatform)' == 'android' And '$(AndroidSdkRoot)' != ''">
+	<Target Name="_PrependNdkToPath" BeforeTargets="SetupOSSpecificProps" Condition="'$(GodotTargetPlatform)' == 'android' And '$(AndroidSdkRoot)' != ''">
 		<PrependToPath Directory="$(_AndroidNdkBin)" />
 	</Target>
 
@@ -112,6 +111,7 @@
 
 	<ItemGroup>
 		<!-- Trimmer ignores, this is currently required for Godot NativeAOT projects -->
+		<PackageReference Include="Concentus" Version="2.2.2" />
 		<TrimmerRootAssembly Include="$(TargetName)" />
 		<TrimmerRootAssembly Include="GodotSharp" />
 

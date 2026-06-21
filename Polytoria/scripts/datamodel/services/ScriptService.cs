@@ -150,6 +150,7 @@ public sealed partial class ScriptService : Instance
 			{ "PlayerDefaults", root.PlayerDefaults },
 			{ "PlayerGUI", root.PlayerGUI },
 			{ "Chat", root.Chat },
+			{ "VoiceChat", root.VoiceChat },
 			{ "Filter", root.Filter },
 			{ "Camera", root.Environment.CurrentCamera },
 			{ "Assets", root.Assets },

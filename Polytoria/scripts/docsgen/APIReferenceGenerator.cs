@@ -26,7 +26,18 @@ public class APIReferenceGenerator
 	{
 		Assembly assembly = Assembly.GetExecutingAssembly();
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-		Type[] types = assembly.GetTypes();
+		Type[] types;
+		try
+		{
+			types = assembly.GetTypes();
+		}
+		catch (ReflectionTypeLoadException ex)
+		{
+			// A single type whose dependency can't be loaded (e.g. trimmed in an AOT export)
+			// must not abort the whole reference/doc generation — which the creator runs at
+			// session start. Use the types that did load.
+			types = ex.Types.Where(t => t != null).ToArray()!;
+		}
 #pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 
 		APIReferenceRoot apiRef = new() { Version = Globals.AppVersion, Classes = [], InstanceClasses = [] };

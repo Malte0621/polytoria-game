@@ -7,6 +7,7 @@ using Polytoria.Client.UI.Capture;
 using Polytoria.Client.UI.Chat;
 using Polytoria.Client.UI.Playerlist;
 using Polytoria.Client.UI.Purchases;
+using Polytoria.Client.UI.Voice;
 using Polytoria.Datamodel;
 using Polytoria.Datamodel.Services;
 
@@ -72,6 +73,9 @@ public partial class CoreUIRoot : CanvasLayer
 #endif
 
 		Service.CtrlLockCursorChanged.Connect(OnCtrlLockCursorChanged);
+
+		// Inject the voice-chat HUD (self mic button + speaking indicator).
+		AddChild(new UIVoiceHUD { Name = "VoiceHUD" });
 
 		base._EnterTree();
 		OnCtrlLockCursorChanged();

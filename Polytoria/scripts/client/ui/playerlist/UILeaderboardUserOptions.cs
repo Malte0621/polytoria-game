@@ -15,6 +15,7 @@ public partial class UILeaderboardUserOptions : Control
 	[Export] private Button _removeFriendBtn = null!;
 	[Export] private Button _viewProfileBtn = null!;
 	[Export] private Control _loaderView = null!;
+	private Button _muteVoiceBtn = null!;
 	public bool Active { get; private set; } = false;
 	public UILeaderboardUserItem? Target;
 	private World _root = null!;
@@ -26,7 +27,26 @@ public partial class UILeaderboardUserOptions : Control
 		_viewProfileBtn.Pressed += OnViewProfile;
 		_addFriendBtn.Pressed += OnAddFriend;
 		_removeFriendBtn.Pressed += OnRemoveFriend;
+
+		// Add a "Mute Voice" option (local mute), styled to match the existing buttons by
+		// duplicating one of them. Exclude signals so it does NOT inherit View-Profile's
+		// click handler.
+		_muteVoiceBtn = (Button)_viewProfileBtn.Duplicate((int)(Node.DuplicateFlags.Groups | Node.DuplicateFlags.Scripts));
+		_muteVoiceBtn.Name = "MuteVoice";
+		_muteVoiceBtn.Text = "Mute Voice";
+		_viewProfileBtn.GetParent().AddChild(_muteVoiceBtn);
+		_muteVoiceBtn.Pressed += OnMuteVoice;
+
 		base._Ready();
+	}
+
+	private void OnMuteVoice()
+	{
+		if (Target == null) return;
+		Player target = Target.TargetPlayer;
+		bool nowMuted = !_root.VoiceChat.IsPlayerMuted(target);
+		_root.VoiceChat.SetPlayerMuted(target, nowMuted);
+		Disappear();
 	}
 
 	private void OnAddFriend()
@@ -66,6 +86,14 @@ public partial class UILeaderboardUserOptions : Control
 		Active = true;
 		Target = item;
 		_root = Target.Leaderboard.CoreUI.Root;
+
+		// Hide local mute for yourself; otherwise reflect current mute state.
+		bool isSelf = item.TargetPlayer == _root.Players.LocalPlayer;
+		_muteVoiceBtn.Visible = !isSelf;
+		if (!isSelf)
+		{
+			_muteVoiceBtn.Text = _root.VoiceChat.IsPlayerMuted(item.TargetPlayer) ? "Unmute Voice" : "Mute Voice";
+		}
 
 		GlobalPosition = item.GetNode<Control>("InfoSpawn").GlobalPosition;
 		_animPlay.Stop();

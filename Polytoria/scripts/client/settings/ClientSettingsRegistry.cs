@@ -2,6 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+using Polytoria.Enums;
 using Polytoria.Shared.Settings;
 using System.Collections.Generic;
 
@@ -17,7 +18,8 @@ public static class ClientSettingsRegistry
 		new() {Key = "post_processing", Label = "Post Processing", IconPath = "res://assets/textures/ui-icons/rocket.svg", SortOrder = 3},
 		new() {Key = "overlay", Label = "Overlay", IconPath = "res://assets/textures/ui-icons/copy.svg", SortOrder = 4},
 		new() {Key = "chat", Label = "Chat", IconPath = "res://assets/textures/ui-icons/messages.svg", SortOrder = 5},
-		new() {Key = "advanced", Label = "Advanced", IconPath = "res://assets/textures/ui-icons/code.svg", SortOrder = 6}
+		new() {Key = "advanced", Label = "Advanced", IconPath = "res://assets/textures/ui-icons/code.svg", SortOrder = 6},
+		new() {Key = "voice", Label = "Voice Chat", IconPath = "res://assets/textures/ui-icons/messages.svg", SortOrder = 7}
 	];
 
 	public static readonly IReadOnlyDictionary<string, SettingDef> Definitions = Build();
@@ -183,6 +185,136 @@ public static class ClientSettingsRegistry
 				ValueKind = SettingValueKind.Bool,
 				ControlKind = SettingControlKind.Toggle,
 				DefaultValue = true,
+			});
+
+		defs.Add(ClientSettingKeys.Voice.Enabled,
+			new SettingDef<bool>
+			{
+				Key = ClientSettingKeys.Voice.Enabled,
+				SectionKey = "voice",
+				Label = "Enable Voice Chat",
+				Description = "Capture your microphone and hear other players' voices.",
+				ValueKind = SettingValueKind.Bool,
+				ControlKind = SettingControlKind.Toggle,
+				DefaultValue = false
+			});
+
+		defs.Add(ClientSettingKeys.Voice.ActivationMode,
+			new SettingDef<VoiceActivationModeEnum>
+			{
+				Key = ClientSettingKeys.Voice.ActivationMode,
+				SectionKey = "voice",
+				Label = "Activation Mode",
+				Description = "When your microphone transmits.",
+				ValueKind = SettingValueKind.Enum,
+				ControlKind = SettingControlKind.Dropdown,
+				DefaultValue = VoiceActivationModeEnum.VoiceActivity,
+				Options =
+				[
+					new() { Value = VoiceActivationModeEnum.VoiceActivity, Label = "Voice Activity" },
+					new() { Value = VoiceActivationModeEnum.PushToTalk, Label = "Push to Talk" },
+					new() { Value = VoiceActivationModeEnum.Open, Label = "Open Mic" },
+				]
+			});
+
+		defs.Add(ClientSettingKeys.Voice.PushToTalkKey,
+			new SettingDef<KeyCodeEnum>
+			{
+				Key = ClientSettingKeys.Voice.PushToTalkKey,
+				SectionKey = "voice",
+				Label = "Push to Talk Key",
+				Description = "Key held to transmit when using Push to Talk.",
+				ValueKind = SettingValueKind.Enum,
+				ControlKind = SettingControlKind.Dropdown,
+				DefaultValue = KeyCodeEnum.V,
+				Options =
+				[
+					new() { Value = KeyCodeEnum.V, Label = "V" },
+					new() { Value = KeyCodeEnum.B, Label = "B" },
+					new() { Value = KeyCodeEnum.T, Label = "T" },
+					new() { Value = KeyCodeEnum.G, Label = "G" },
+					new() { Value = KeyCodeEnum.H, Label = "H" },
+					new() { Value = KeyCodeEnum.J, Label = "J" },
+					new() { Value = KeyCodeEnum.K, Label = "K" },
+					new() { Value = KeyCodeEnum.CapsLock, Label = "Caps Lock" },
+				]
+			});
+
+		defs.Add(ClientSettingKeys.Voice.ActivationThreshold,
+			new SettingDef<float>
+			{
+				Key = ClientSettingKeys.Voice.ActivationThreshold,
+				SectionKey = "voice",
+				Label = "Activation Threshold",
+				Description = "Loudness required to open the mic in Voice Activity mode. Lower is more sensitive.",
+				ValueKind = SettingValueKind.Float,
+				ControlKind = SettingControlKind.Slider,
+				DefaultValue = 0.05f,
+				MinValue = 0f,
+				MaxValue = 0.3f,
+				Step = 0.005f
+			});
+
+		defs.Add(ClientSettingKeys.Voice.InputVolume,
+			new SettingDef<float>
+			{
+				Key = ClientSettingKeys.Voice.InputVolume,
+				SectionKey = "voice",
+				Label = "Microphone Volume",
+				Description = "Gain applied to your microphone input.",
+				ValueKind = SettingValueKind.Float,
+				ControlKind = SettingControlKind.Slider,
+				DefaultValue = 100f,
+				MinValue = 0f,
+				MaxValue = 200f,
+				Step = 1f
+			});
+
+		defs.Add(ClientSettingKeys.Voice.OutputVolume,
+			new SettingDef<float>
+			{
+				Key = ClientSettingKeys.Voice.OutputVolume,
+				SectionKey = "voice",
+				Label = "Voice Volume",
+				Description = "Volume of other players' voices.",
+				ValueKind = SettingValueKind.Float,
+				ControlKind = SettingControlKind.Slider,
+				DefaultValue = 100f,
+				MinValue = 0f,
+				MaxValue = 200f,
+				Step = 1f
+			});
+
+		defs.Add(ClientSettingKeys.Voice.MaxDistance,
+			new SettingDef<float>
+			{
+				Key = ClientSettingKeys.Voice.MaxDistance,
+				SectionKey = "voice",
+				Label = "Hearing Distance",
+				Description = "How far away a speaker can be before their voice fully fades out.",
+				ValueKind = SettingValueKind.Float,
+				ControlKind = SettingControlKind.Slider,
+				DefaultValue = 60f,
+				MinValue = 10f,
+				MaxValue = 250f,
+				Step = 5f
+			});
+
+		defs.Add(ClientSettingKeys.Voice.InputDevice,
+			new SettingDef<string>
+			{
+				Key = ClientSettingKeys.Voice.InputDevice,
+				SectionKey = "voice",
+				Label = "Microphone Device",
+				Description = "Input device to capture from. Use the VoiceChat API to pick a specific device.",
+				ValueKind = SettingValueKind.String,
+				ControlKind = SettingControlKind.Dropdown,
+				DefaultValue = "Default",
+				IsAdvanced = true,
+				Options =
+				[
+					new() { Value = "Default", Label = "Default" },
+				]
 			});
 
 		SettingDef.ValidateAll(defs.Values);

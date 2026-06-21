@@ -59,7 +59,7 @@ public class NetworkInstance
 		_peer = new();
 	}
 
-	public void CreateServer(int port = DefaultPort, int maxChannels = 3)
+	public void CreateServer(int port = DefaultPort, int maxChannels = 4)
 	{
 		Error e = _peer.CreateHostBound("*", port, DefaultCapacity, maxChannels);
 		_peer.Compress(CompressionMode);
@@ -74,7 +74,7 @@ public class NetworkInstance
 		PostPeerCreate();
 	}
 
-	public async Task CreateClient(string address, int port, int maxChannels = 3)
+	public async Task CreateClient(string address, int port, int maxChannels = 4)
 	{
 		Error e = _peer.CreateHost(DefaultCapacity, maxChannels);
 		_peer.BandwidthLimit(BandwidthInLimit, BandwidthOutLimit);

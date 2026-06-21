@@ -35,4 +35,16 @@ public static class ClientSettingKeys
 	{
 		public const string ShowAdvancedSettings = "advanced.show_advanced_settings";
 	}
+
+	public static class Voice
+	{
+		public const string Enabled = "voice.enabled";
+		public const string InputVolume = "voice.input_volume";
+		public const string OutputVolume = "voice.output_volume";
+		public const string MaxDistance = "voice.max_distance";
+		public const string ActivationMode = "voice.activation_mode";
+		public const string PushToTalkKey = "voice.ptt_key";
+		public const string ActivationThreshold = "voice.activation_threshold";
+		public const string InputDevice = "voice.input_device";
+	}
 }

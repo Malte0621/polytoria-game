@@ -85,10 +85,28 @@ public sealed partial class Player : NPC
 	[SyncVar]
 	public bool IsAgeRestricted { get; set; } = false;
 
+	// Voice chat moderation state, server-authoritative (set via VoiceChatService).
+	[SyncVar]
+	public bool IsServerMuted { get; set; } = false;
+
+	[SyncVar]
+	public bool IsServerDeafened { get; set; } = false;
+
+	[SyncVar]
+	public int VoiceChannel { get; set; } = 0;
+
 	internal APIUserInfo? UserInfo { get; private set; }
 
 	[ScriptProperty]
 	public PTSignal<string> Chatted { get; private set; } = new();
+
+	/// <summary>True while this player is transmitting/audible on voice chat (client-side display state).</summary>
+	[ScriptProperty]
+	public bool IsSpeaking { get; private set; } = false;
+
+	/// <summary>Fires when this player starts/stops speaking on voice chat: (isSpeaking).</summary>
+	[ScriptProperty]
+	public PTSignal<bool> SpeakingChanged { get; private set; } = new();
 
 	[ScriptProperty]
 	public PTSignal<Stat, object?> StatChanged { get; private set; } = new();
@@ -886,6 +904,17 @@ public sealed partial class Player : NPC
 	internal void InvokeChatted(string msg)
 	{
 		Chatted.Invoke(msg);
+	}
+
+	/// <summary>Update voice speaking state and fire <see cref="SpeakingChanged"/> on transitions.</summary>
+	internal void SetSpeaking(bool value)
+	{
+		if (value == IsSpeaking)
+		{
+			return;
+		}
+		IsSpeaking = value;
+		SpeakingChanged.Invoke(value);
 	}
 
 	public override void Jump()
