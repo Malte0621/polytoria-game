@@ -34,7 +34,7 @@ namespace Polytoria.Datamodel.Services;
 /// settings. Server members (SetServerMuted / SetServerDeafened / SetVoiceChannel /
 /// SetCanHear) are server-authoritative and throw if called off the server.
 /// </summary>
-[Static("VoiceChat"), ExplorerExclude, SaveIgnore]
+[Static("VoiceChat")]
 public sealed partial class VoiceChatService : Instance
 {
 	// Per-peer cap on inbound voice frames (50 fps nominal + headroom) to stop flooding.
@@ -333,6 +333,12 @@ public sealed partial class VoiceChatService : Instance
 				ClearReceivers();
 			}
 		}
+
+		// Mirror the runtime state back into the persisted "Enable Voice Chat" setting so
+		// the topbar button, the settings toggle and Luau always agree (and the choice
+		// persists). When the change ORIGINATED from the setting, this Set is a no-op
+		// (value unchanged), so there is no feedback loop.
+		ClientSettingsService.Instance?.Set(ClientSettingKeys.Voice.Enabled, value);
 
 		StateChanged.Invoke();
 	}

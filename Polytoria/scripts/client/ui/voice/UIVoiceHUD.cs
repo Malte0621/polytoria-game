@@ -4,34 +4,32 @@
 
 using Godot;
 using Polytoria.Datamodel;
+using Polytoria.Datamodel.Services;
 using Polytoria.Enums;
 
 namespace Polytoria.Client.UI.Voice;
 
 /// <summary>
-/// On-screen voice control shown in the in-game HUD (bottom-left). It is a single mic
-/// button that doubles as a status indicator:
-///   * voice off  -> red muted-mic icon (tap to enable)
-///   * voice on    -> green sound-bars (animated while the local player is speaking)
-/// In push-to-talk mode the button is hold-to-talk (and auto-enables voice); in the
-/// other modes a tap toggles voice on/off. Works on desktop and touch.
+/// Voice-chat control placed in the top button bar, right after the Backpack button.
+/// It is a 48x48 button that matches the other topbar buttons — it has no style override,
+/// so it inherits the same square background from the theme — with a microphone icon
+/// that reflects state: red when voice is off, white when on/idle, green while the local
+/// player is speaking. Tap toggles voice on/off; in push-to-talk mode, press-and-hold
+/// transmits. This node only manages the button; the button itself lives in the topbar.
 /// </summary>
-public sealed partial class UIVoiceHUD : Control
+public sealed partial class UIVoiceHUD : Node
 {
-	private const string MicIconPath = "res://assets/textures/client/ui/indicators/silence.svg";
+	private const string MicIconPath = "res://assets/textures/client/ui/menu_button/microphone.svg";
 
 	private World _root = null!;
+	private VoiceChatService _voice = null!;
 	private Button _button = null!;
-	private TextureRect _mutedIcon = null!;
-	private HBoxContainer _bars = null!;
-	private readonly ColorRect[] _voiceBars = new ColorRect[3];
+	private TextureRect _icon = null!;
 	private bool _ready;
 	private bool _ptHeld;
 
 	public override void _Ready()
 	{
-		MouseFilter = MouseFilterEnum.Ignore;
-		SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
 		SetProcess(false);
 		Init();
 	}
@@ -39,9 +37,12 @@ public sealed partial class UIVoiceHUD : Control
 	private void Init()
 	{
 		_root = CoreUIRoot.Singleton?.Root!;
-		if (_root == null || _root.VoiceChat == null)
+		HBoxContainer? bar = CoreUIRoot.Singleton?.GetNodeOrNull<HBoxContainer>("Control/MenuButton");
+		Button? backpack = CoreUIRoot.Singleton?.GetNodeOrNull<Button>("Control/MenuButton/Backpack");
+
+		if (_root == null || _root.VoiceChat == null || bar == null || backpack == null)
 		{
-			// World/service not wired yet — retry next frame.
+			// CoreUI / world not fully wired yet — retry next frame.
 			CallDeferred(nameof(Init));
 			return;
 		}
@@ -50,91 +51,61 @@ public sealed partial class UIVoiceHUD : Control
 			return;
 		}
 		_ready = true;
+		_voice = _root.VoiceChat;
 
-		BuildButton();
+		BuildButton(bar, backpack);
 		SetProcess(true);
 	}
 
-	private void BuildButton()
+	private void BuildButton(HBoxContainer bar, Button backpack)
 	{
 		_button = new Button
 		{
-			FocusMode = FocusModeEnum.None,
-			MouseDefaultCursorShape = CursorShape.PointingHand,
-			TooltipText = "Voice chat"
+			Name = "Voice",
+			CustomMinimumSize = new Vector2(48, 48),
+			FocusMode = Control.FocusModeEnum.None,
+			MouseDefaultCursorShape = Control.CursorShape.PointingHand,
+			TooltipText = "Voice Chat"
 		};
-		_button.SetAnchorsPreset(LayoutPreset.BottomLeft);
-		_button.OffsetLeft = 24;
-		_button.OffsetTop = -84;
-		_button.OffsetRight = 84;
-		_button.OffsetBottom = -24;
-		_button.AddThemeStyleboxOverride("normal", MakeStyle(new Color(0.10f, 0.10f, 0.12f, 0.70f)));
-		_button.AddThemeStyleboxOverride("hover", MakeStyle(new Color(0.15f, 0.15f, 0.18f, 0.80f)));
-		_button.AddThemeStyleboxOverride("pressed", MakeStyle(new Color(0.20f, 0.20f, 0.24f, 0.90f)));
-		AddChild(_button);
+		// Intentionally NO theme stylebox override -> inherits the same square topbar
+		// button background (normal/hover/pressed) as Menu/Chat/Backpack.
 
-		_mutedIcon = new TextureRect
+		_icon = new TextureRect
 		{
 			Texture = GD.Load<Texture2D>(MicIconPath),
 			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
 			StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-			MouseFilter = MouseFilterEnum.Ignore,
-			Modulate = new Color(0.92f, 0.38f, 0.38f)
+			MouseFilter = Control.MouseFilterEnum.Ignore
 		};
-		_mutedIcon.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-		_mutedIcon.OffsetLeft = 14;
-		_mutedIcon.OffsetTop = 14;
-		_mutedIcon.OffsetRight = -14;
-		_mutedIcon.OffsetBottom = -14;
-		_button.AddChild(_mutedIcon);
+		// Match the icon placement used by the other topbar buttons (centered, 32x48).
+		_icon.AnchorLeft = 0.5f;
+		_icon.AnchorTop = 0.5f;
+		_icon.AnchorRight = 0.5f;
+		_icon.AnchorBottom = 0.5f;
+		_icon.OffsetLeft = -16f;
+		_icon.OffsetTop = -24f;
+		_icon.OffsetRight = 16f;
+		_icon.OffsetBottom = 24f;
+		_button.AddChild(_icon);
 
-		_bars = new HBoxContainer
-		{
-			MouseFilter = MouseFilterEnum.Ignore,
-			Alignment = BoxContainer.AlignmentMode.Center
-		};
-		_bars.AddThemeConstantOverride("separation", 5);
-		_bars.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-		for (int i = 0; i < _voiceBars.Length; i++)
-		{
-			ColorRect bar = new()
-			{
-				Color = new Color(0.4f, 0.7f, 0.45f),
-				CustomMinimumSize = new Vector2(8, 10),
-				SizeFlagsVertical = Control.SizeFlags.ShrinkCenter
-			};
-			_voiceBars[i] = bar;
-			_bars.AddChild(bar);
-		}
-		_button.AddChild(_bars);
+		bar.AddChild(_button);
+		bar.MoveChild(_button, backpack.GetIndex() + 1); // right after Backpack (far right)
 
 		_button.Pressed += OnPressed;
 		_button.ButtonDown += OnButtonDown;
 		_button.ButtonUp += OnButtonUp;
 	}
 
-	private static StyleBoxFlat MakeStyle(Color color)
-	{
-		return new StyleBoxFlat
-		{
-			BgColor = color,
-			CornerRadiusTopLeft = 30,
-			CornerRadiusTopRight = 30,
-			CornerRadiusBottomLeft = 30,
-			CornerRadiusBottomRight = 30
-		};
-	}
-
-	private bool IsPushToTalk => _root.VoiceChat.ActivationMode == VoiceActivationModeEnum.PushToTalk;
+	private bool IsPushToTalk => _voice.ActivationMode == VoiceActivationModeEnum.PushToTalk;
 
 	private void OnPressed()
 	{
-		// Push-to-talk uses hold (button down/up); a tap toggles voice in the other modes.
+		// Push-to-talk uses hold (down/up); a tap toggles voice in the other modes.
 		if (IsPushToTalk)
 		{
 			return;
 		}
-		_root.VoiceChat.Toggle();
+		_voice.Toggle();
 	}
 
 	private void OnButtonDown()
@@ -143,12 +114,12 @@ public sealed partial class UIVoiceHUD : Control
 		{
 			return;
 		}
-		if (!_root.VoiceChat.Enabled)
+		if (!_voice.Enabled)
 		{
-			_root.VoiceChat.Enabled = true;
+			_voice.Enabled = true;
 		}
 		_ptHeld = true;
-		_root.VoiceChat.SetPushToTalkActive(true);
+		_voice.SetPushToTalkActive(true);
 	}
 
 	private void OnButtonUp()
@@ -156,8 +127,7 @@ public sealed partial class UIVoiceHUD : Control
 		ReleasePushToTalk();
 	}
 
-	/// <summary>Clear the push-to-talk latch (idempotent). Tied to the HUD's lifetime so the
-	/// mic can never stay stuck transmitting after the button is released/hidden/freed.</summary>
+	/// <summary>Clear the push-to-talk latch (idempotent), so the mic can never stay stuck on.</summary>
 	private void ReleasePushToTalk()
 	{
 		if (!_ptHeld)
@@ -165,9 +135,9 @@ public sealed partial class UIVoiceHUD : Control
 			return;
 		}
 		_ptHeld = false;
-		if (_root != null && _root.VoiceChat != null)
+		if (_voice != null)
 		{
-			_root.VoiceChat.SetPushToTalkActive(false);
+			_voice.SetPushToTalkActive(false);
 		}
 	}
 
@@ -178,36 +148,31 @@ public sealed partial class UIVoiceHUD : Control
 			return;
 		}
 
-		// Self-heal a stuck push-to-talk latch: if we think it's held but the button is no
-		// longer pressed (e.g. the HUD was hidden via hide_ui mid-hold), release it.
+		// Self-heal a stuck push-to-talk latch if the button stopped being held without a
+		// ButtonUp (e.g. the topbar was hidden via hide_ui mid-hold).
 		if (_ptHeld && !_button.IsPressed())
 		{
 			ReleasePushToTalk();
 		}
 
-		bool enabled = _root.VoiceChat.Enabled;
-		_mutedIcon.Visible = !enabled;
-		_bars.Visible = enabled;
-		if (!enabled)
+		if (!_voice.Enabled)
 		{
+			_icon.Modulate = new Color(0.95f, 0.42f, 0.42f); // off / muted -> red
 			return;
 		}
 
-		bool speaking = _root.VoiceChat.IsLocalSpeaking;
-		double t = Time.GetTicksMsec() / 1000.0;
-		for (int i = 0; i < _voiceBars.Length; i++)
-		{
-			float h = speaking
-				? 10f + 16f * (0.5f + 0.5f * Mathf.Sin((float)(t * 14.0) + i * 1.6f))
-				: 10f;
-			_voiceBars[i].CustomMinimumSize = new Vector2(8, h);
-			_voiceBars[i].Color = speaking ? new Color(0.25f, 0.95f, 0.35f) : new Color(0.4f, 0.7f, 0.45f);
-		}
+		_icon.Modulate = _voice.IsLocalSpeaking
+			? new Color(0.35f, 1f, 0.45f)  // speaking -> green
+			: new Color(1f, 1f, 1f);       // on, idle -> white
 	}
 
 	public override void _ExitTree()
 	{
 		ReleasePushToTalk();
+		if (_button != null && GodotObject.IsInstanceValid(_button))
+		{
+			_button.QueueFree();
+		}
 		base._ExitTree();
 	}
 }
